@@ -391,6 +391,18 @@
             max-width: 400px;
         }
 
+        .pdf-fallback-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            z-index: 100;
+        }
+
         /* PDF Preview Panel */
         .pdf-preview-panel {
             position: fixed;
@@ -450,6 +462,25 @@
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+        }
+
+        .viewer-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .viewer-toggle:hover {
+            background: rgba(0,0,0,0.9);
         }
 
         /* Mobile Responsive Design */
@@ -596,6 +627,16 @@
             right: 0;
             z-index: 10001;
         }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
     </style>
 </head>
 <body>
@@ -684,6 +725,7 @@
             </div>
             <div class="pdf-viewer-container">
                 <div class="pdf-loading" id="pdfLoading">
+                    <div class="loading-spinner"></div>
                     <div>Loading PDF...</div>
                 </div>
                 <iframe id="pdfViewer" class="pdf-viewer" style="display: none;"></iframe>
@@ -692,6 +734,12 @@
                     <p>Unable to load the PDF file. Please check the URL and try again.</p>
                     <button onclick="closePdfModal()" style="margin-top: 10px; padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
                 </div>
+                <div class="pdf-fallback-info" id="pdfFallbackInfo" style="display: none;">
+                    Using Google Docs Viewer (Fallback)
+                </div>
+                <button class="viewer-toggle" id="viewerToggle" onclick="togglePdfViewer()" style="display: none;">
+                    Switch to Google Docs Viewer
+                </button>
             </div>
         </div>
     </div>
@@ -703,13 +751,21 @@
             <button class="close-btn" onclick="closePdfPreview()">✕</button>
         </div>
         <div class="pdf-preview-content">
-            <iframe id="pdfPreviewIframe" class="pdf-preview-iframe"></iframe>
+            <div style="position: relative;">
+                <iframe id="pdfPreviewIframe" class="pdf-preview-iframe"></iframe>
+                <div class="pdf-fallback-info" id="pdfPreviewFallbackInfo" style="display: none;">
+                    Using Google Docs Viewer (Fallback)
+                </div>
+                <button class="viewer-toggle" id="previewViewerToggle" onclick="togglePreviewPdfViewer()" style="display: none;">
+                    Switch to Google Docs Viewer
+                </button>
+            </div>
             <div class="pdf-preview-info">
                 <h5>Document Information</h5>
                 <p id="pdfPreviewInfo">Loading document information...</p>
             </div>
             <div class="pdf-preview-actions">
-                <button class="pdf-btn fullscreen-btn" onclick="openPdfFullscreen()">🔍 Open Fullscreen</button>
+                <button class="pdf-btn fullscreen-btn" onclick="openPdfFullscreenFromPreview()">🔍 Open Fullscreen</button>
                 <button class="pdf-btn preview-btn" onclick="openPdfInNewTab()">📂 Open in New Tab</button>
             </div>
         </div>
@@ -730,6 +786,9 @@
         let debugMode = false;
         let currentPdfUrl = '';
         let isFullscreen = false;
+        let currentPdfTitle = '';
+        let usingNativeViewer = true;
+        let previewUsingNativeViewer = true;
 
         // Mode Selection Functions
         function enterUserMode() {
@@ -1086,24 +1145,48 @@
         // PDF Functions
         function openPdfPreview(pdfUrl, title) {
             currentPdfUrl = pdfUrl;
+            currentPdfTitle = title;
             const panel = document.getElementById('pdfPreviewPanel');
             const iframe = document.getElementById('pdfPreviewIframe');
             const titleElement = document.getElementById('pdfPreviewTitle');
             const infoElement = document.getElementById('pdfPreviewInfo');
+            const fallbackInfo = document.getElementById('pdfPreviewFallbackInfo');
+            const toggleBtn = document.getElementById('previewViewerToggle');
             
             titleElement.textContent = title || 'PDF Preview';
+            previewUsingNativeViewer = true;
             
-            // Use Google Docs viewer for PDF preview
-            const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
-            iframe.src = viewerUrl;
+            // Reset UI
+            fallbackInfo.style.display = 'none';
+            toggleBtn.style.display = 'none';
             
-            // Update info
-            infoElement.innerHTML = `
-                <strong>Title:</strong> ${title || 'N/A'}<br>
-                <strong>URL:</strong> <a href="${pdfUrl}" target="_blank" style="color: #3498db; word-break: break-all;">${pdfUrl}</a><br>
-                <strong>Type:</strong> PDF Document<br>
-                <strong>Actions:</strong> Use buttons below to view in different modes.
-            `;
+            // Try native PDF viewer first
+            loadPdfInIframe(iframe, pdfUrl, false, function() {
+                // Success callback
+                infoElement.innerHTML = `
+                    <strong>Title:</strong> ${title || 'N/A'}<br>
+                    <strong>URL:</strong> <a href="${pdfUrl}" target="_blank" style="color: #3498db; word-break: break-all;">${pdfUrl}</a><br>
+                    <strong>Type:</strong> PDF Document<br>
+                    <strong>Viewer:</strong> Native Browser Viewer<br>
+                    <strong>Actions:</strong> Use buttons below to view in different modes.
+                `;
+            }, function() {
+                // Fallback to Google Docs Viewer
+                previewUsingNativeViewer = false;
+                const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+                iframe.src = viewerUrl;
+                fallbackInfo.style.display = 'block';
+                toggleBtn.style.display = 'block';
+                toggleBtn.textContent = 'Switch to Native Viewer';
+                
+                infoElement.innerHTML = `
+                    <strong>Title:</strong> ${title || 'N/A'}<br>
+                    <strong>URL:</strong> <a href="${pdfUrl}" target="_blank" style="color: #3498db; word-break: break-all;">${pdfUrl}</a><br>
+                    <strong>Type:</strong> PDF Document<br>
+                    <strong>Viewer:</strong> Google Docs Viewer (Fallback)<br>
+                    <strong>Actions:</strong> Use buttons below to view in different modes.
+                `;
+            });
             
             panel.classList.add('open');
         }
@@ -1116,34 +1199,89 @@
 
         function openPdfFullscreen(pdfUrl, title) {
             currentPdfUrl = pdfUrl;
+            currentPdfTitle = title;
             const modal = document.getElementById('pdfModal');
             const viewer = document.getElementById('pdfViewer');
             const titleElement = document.getElementById('pdfModalTitle');
             const loading = document.getElementById('pdfLoading');
             const error = document.getElementById('pdfError');
+            const fallbackInfo = document.getElementById('pdfFallbackInfo');
+            const toggleBtn = document.getElementById('viewerToggle');
             
             titleElement.textContent = title || 'PDF Viewer';
+            usingNativeViewer = true;
             
             // Show loading, hide error and viewer
             loading.style.display = 'block';
             viewer.style.display = 'none';
             error.style.display = 'none';
+            fallbackInfo.style.display = 'none';
+            toggleBtn.style.display = 'none';
             
-            // Use Google Docs viewer for PDF
-            const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
-            
-            viewer.onload = function() {
+            // Try native PDF viewer first
+            loadPdfInIframe(viewer, pdfUrl, true, function() {
+                // Success callback
                 loading.style.display = 'none';
                 viewer.style.display = 'block';
-            };
+            }, function() {
+                // Fallback to Google Docs Viewer
+                usingNativeViewer = false;
+                const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+                viewer.src = viewerUrl;
+                fallbackInfo.style.display = 'block';
+                toggleBtn.style.display = 'block';
+                toggleBtn.textContent = 'Switch to Native Viewer';
+                
+                viewer.onload = function() {
+                    loading.style.display = 'none';
+                    viewer.style.display = 'block';
+                };
+            });
             
-            viewer.onerror = function() {
-                loading.style.display = 'none';
-                error.style.display = 'block';
-            };
-            
-            viewer.src = viewerUrl;
             modal.style.display = 'block';
+        }
+
+        function loadPdfInIframe(iframe, pdfUrl, isFullscreen, successCallback, fallbackCallback) {
+            let loadTimeout;
+            let isLoaded = false;
+            
+            // Set up timeout for fallback
+            loadTimeout = setTimeout(function() {
+                if (!isLoaded) {
+                    fallbackCallback();
+                }
+            }, 3000);
+            
+            // Set up load event handler
+            iframe.onload = function() {
+                isLoaded = true;
+                clearTimeout(loadTimeout);
+                
+                // Check if the iframe loaded successfully
+                try {
+                    // Try to access the iframe content (may fail due to same-origin policy)
+                    const iframeContent = iframe.contentDocument || iframe.contentWindow.document;
+                    if (iframeContent) {
+                        successCallback();
+                    } else {
+                        fallbackCallback();
+                    }
+                } catch (e) {
+                    // If we can't access the content, assume it loaded successfully
+                    // (this is common for cross-origin PDFs)
+                    successCallback();
+                }
+            };
+            
+            // Set up error handler
+            iframe.onerror = function() {
+                isLoaded = true;
+                clearTimeout(loadTimeout);
+                fallbackCallback();
+            };
+            
+            // Load the PDF
+            iframe.src = pdfUrl;
         }
 
         function closePdfModal() {
@@ -1170,6 +1308,53 @@
                 modal.classList.remove('fullscreen-pdf');
                 document.body.style.overflow = 'auto';
             }
+        }
+
+        function togglePdfViewer() {
+            const viewer = document.getElementById('pdfViewer');
+            const fallbackInfo = document.getElementById('pdfFallbackInfo');
+            const toggleBtn = document.getElementById('viewerToggle');
+            
+            if (usingNativeViewer) {
+                // Switch to Google Docs Viewer
+                usingNativeViewer = false;
+                const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(currentPdfUrl)}&embedded=true`;
+                viewer.src = viewerUrl;
+                fallbackInfo.style.display = 'block';
+                toggleBtn.textContent = 'Switch to Native Viewer';
+            } else {
+                // Switch to native viewer
+                usingNativeViewer = true;
+                viewer.src = currentPdfUrl;
+                fallbackInfo.style.display = 'none';
+                toggleBtn.textContent = 'Switch to Google Docs Viewer';
+            }
+        }
+
+        function togglePreviewPdfViewer() {
+            const iframe = document.getElementById('pdfPreviewIframe');
+            const fallbackInfo = document.getElementById('pdfPreviewFallbackInfo');
+            const toggleBtn = document.getElementById('previewViewerToggle');
+            
+            if (previewUsingNativeViewer) {
+                // Switch to Google Docs Viewer
+                previewUsingNativeViewer = false;
+                const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(currentPdfUrl)}&embedded=true`;
+                iframe.src = viewerUrl;
+                fallbackInfo.style.display = 'block';
+                toggleBtn.textContent = 'Switch to Native Viewer';
+            } else {
+                // Switch to native viewer
+                previewUsingNativeViewer = true;
+                iframe.src = currentPdfUrl;
+                fallbackInfo.style.display = 'none';
+                toggleBtn.textContent = 'Switch to Google Docs Viewer';
+            }
+        }
+
+        function openPdfFullscreenFromPreview() {
+            closePdfPreview();
+            openPdfFullscreen(currentPdfUrl, currentPdfTitle);
         }
 
         function openPdfInNewTab() {
