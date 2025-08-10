@@ -129,6 +129,31 @@
             font-size: 1rem;
         }
 
+        .refresh-btn {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -195,10 +220,44 @@
             color: #3498db;
             text-decoration: none;
             font-weight: 500;
+            margin-right: 8px;
         }
 
         .paper-link:hover {
             text-decoration: underline;
+        }
+
+        .pdf-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pdf-btn {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .preview-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .fullscreen-btn {
+            background: linear-gradient(135deg, #6f42c1, #e83e8c);
+            color: white;
+        }
+
+        .pdf-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
         .admin-controls {
@@ -240,6 +299,157 @@
             margin: 15px 0;
             border-left: 4px solid #28a745;
             display: none;
+        }
+
+        /* PDF Modal Styles */
+        .pdf-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .pdf-modal-content {
+            position: relative;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-modal-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .pdf-modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .pdf-viewer-container {
+            flex: 1;
+            position: relative;
+            background: #f0f0f0;
+            overflow: hidden;
+        }
+
+        .pdf-viewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .pdf-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #666;
+        }
+
+        .pdf-error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fee;
+            color: #c33;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        /* PDF Preview Panel */
+        .pdf-preview-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100%;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+            z-index: 999;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-preview-panel.open {
+            right: 0;
+        }
+
+        .pdf-preview-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pdf-preview-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .pdf-preview-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .pdf-preview-iframe {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .pdf-preview-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .pdf-preview-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         /* Mobile Responsive Design */
@@ -288,6 +498,11 @@
             .admin-btn {
                 width: 100%;
             }
+
+            .pdf-preview-panel {
+                width: 100%;
+                right: -100%;
+            }
         }
 
         @media (max-width: 480px) {
@@ -311,6 +526,11 @@
             th, td {
                 padding: 8px 6px;
             }
+
+            .pdf-controls {
+                flex-direction: column;
+                gap: 3px;
+            }
         }
 
         .debug-info {
@@ -324,6 +544,57 @@
             max-height: 200px;
             overflow-y: auto;
             display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .refresh-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Fullscreen styles */
+        .fullscreen-pdf {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10000;
+            background: black;
+        }
+
+        .fullscreen-pdf .pdf-viewer {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .fullscreen-pdf .pdf-modal-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10001;
         }
     </style>
 </head>
@@ -360,7 +631,12 @@
 
         <!-- Content Area -->
         <div class="content" id="contentArea">
-            <button class="back-btn" onclick="goBack()">← Back to Mode Selection</button>
+            <div class="button-group">
+                <button class="back-btn" onclick="goBack()">← Back to Mode Selection</button>
+                <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
+                    🔄 Refresh Data
+                </button>
+            </div>
             
             <div class="loading" id="loadingMessage">Loading research papers...</div>
             <div id="errorMessage" class="error" style="display: none;"></div>
@@ -396,6 +672,49 @@
         </div>
     </div>
 
+    <!-- PDF Fullscreen Modal -->
+    <div id="pdfModal" class="pdf-modal">
+        <div class="pdf-modal-content">
+            <div class="pdf-modal-header">
+                <h3 class="pdf-modal-title" id="pdfModalTitle">PDF Viewer</h3>
+                <div>
+                    <button class="close-btn" onclick="closePdfModal()">✕ Close</button>
+                    <button class="close-btn" onclick="togglePdfFullscreen()" style="margin-left: 10px;">⛶ Fullscreen</button>
+                </div>
+            </div>
+            <div class="pdf-viewer-container">
+                <div class="pdf-loading" id="pdfLoading">
+                    <div>Loading PDF...</div>
+                </div>
+                <iframe id="pdfViewer" class="pdf-viewer" style="display: none;"></iframe>
+                <div class="pdf-error" id="pdfError" style="display: none;">
+                    <h4>Error Loading PDF</h4>
+                    <p>Unable to load the PDF file. Please check the URL and try again.</p>
+                    <button onclick="closePdfModal()" style="margin-top: 10px; padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Preview Panel -->
+    <div id="pdfPreviewPanel" class="pdf-preview-panel">
+        <div class="pdf-preview-header">
+            <h4 class="pdf-preview-title" id="pdfPreviewTitle">PDF Preview</h4>
+            <button class="close-btn" onclick="closePdfPreview()">✕</button>
+        </div>
+        <div class="pdf-preview-content">
+            <iframe id="pdfPreviewIframe" class="pdf-preview-iframe"></iframe>
+            <div class="pdf-preview-info">
+                <h5>Document Information</h5>
+                <p id="pdfPreviewInfo">Loading document information...</p>
+            </div>
+            <div class="pdf-preview-actions">
+                <button class="pdf-btn fullscreen-btn" onclick="openPdfFullscreen()">🔍 Open Fullscreen</button>
+                <button class="pdf-btn preview-btn" onclick="openPdfInNewTab()">📂 Open in New Tab</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Try multiple URL formats to find one that works
         const SHEET_URLS = [
@@ -409,6 +728,8 @@
         let isAdmin = false;
         let currentUrlIndex = 0;
         let debugMode = false;
+        let currentPdfUrl = '';
+        let isFullscreen = false;
 
         // Mode Selection Functions
         function enterUserMode() {
@@ -455,12 +776,39 @@
             document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('successMessage').style.display = 'none';
             document.getElementById('debugInfo').style.display = 'none';
+            closePdfModal();
+            closePdfPreview();
         }
 
         function toggleDebug() {
             debugMode = !debugMode;
             const debugInfo = document.getElementById('debugInfo');
             debugInfo.style.display = debugMode ? 'block' : 'none';
+        }
+
+        // Refresh Function
+        function refreshData() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            const successMsg = document.getElementById('successMessage');
+            const errorMsg = document.getElementById('errorMessage');
+            
+            // Hide previous messages
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            
+            // Disable refresh button and show loading state
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<span class="refresh-spinner"></span>Refreshing...';
+            
+            // Reset URL index to try all formats again
+            currentUrlIndex = 0;
+            
+            // Reload the data
+            loadPapersData().finally(() => {
+                // Re-enable refresh button after loading is complete
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = '🔄 Refresh Data';
+            });
         }
 
         // Data Loading Functions
@@ -514,6 +862,17 @@
                 displayPapersData();
                 loadingMsg.style.display = 'none';
                 tableContainer.style.display = 'block';
+                
+                // Show success message if this was a refresh
+                if (document.getElementById('refreshBtn').disabled === false) {
+                    const successMsg = document.getElementById('successMessage');
+                    successMsg.textContent = 'Data refreshed successfully!';
+                    successMsg.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        successMsg.style.display = 'none';
+                    }, 3000);
+                }
                 
             } catch (error) {
                 console.error('Error loading data:', error);
@@ -666,6 +1025,24 @@
             papersData.forEach((paper, index) => {
                 const row = document.createElement('tr');
                 
+                // Create PDF controls if the link is a PDF
+                const isPdf = paper.link && (paper.link.toLowerCase().includes('.pdf') || paper.link.toLowerCase().includes('arxiv.org'));
+                let linkContent = '';
+                
+                if (paper.link) {
+                    if (isPdf) {
+                        linkContent = `
+                            <div class="pdf-controls">
+                                <a href="${paper.link}" target="_blank" class="paper-link">📄 View Paper</a>
+                                <button class="pdf-btn preview-btn" onclick="openPdfPreview('${paper.link}', '${paper.title.replace(/'/g, "\\'")}')">👁️ Preview</button>
+                                <button class="pdf-btn fullscreen-btn" onclick="openPdfFullscreen('${paper.link}', '${paper.title.replace(/'/g, "\\'")}')">🔍 Fullscreen</button>
+                            </div>
+                        `;
+                    } else {
+                        linkContent = `<a href="${paper.link}" target="_blank" class="paper-link">📄 View Paper</a>`;
+                    }
+                }
+                
                 row.innerHTML = `
                     <td>${isAdmin ? `<div class="editable" contenteditable="true" data-field="date" data-index="${index}">${paper.date}</div>` : paper.date}</td>
                     <td>${isAdmin ? `<div class="editable" contenteditable="true" data-field="title" data-index="${index}">${paper.title}</div>` : paper.title}</td>
@@ -673,7 +1050,7 @@
                     <td>${isAdmin ? `<div class="editable" contenteditable="true" data-field="institution" data-index="${index}">${paper.institution}</div>` : paper.institution}</td>
                     <td>${isAdmin ? `<div class="editable" contenteditable="true" data-field="summary" data-index="${index}">${paper.summary}</div>` : paper.summary}</td>
                     <td>${isAdmin ? `<div class="editable" contenteditable="true" data-field="field" data-index="${index}">${paper.field}</div>` : paper.field}</td>
-                    <td>${paper.link ? `<a href="${paper.link}" target="_blank" class="paper-link">View Paper</a>` : ''}</td>
+                    <td>${linkContent}</td>
                     <td>${isAdmin ? `<div class="editable" contenteditable="true" data-field="source" data-index="${index}">${paper.source}</div>` : paper.source}</td>
                 `;
                 
@@ -704,6 +1081,101 @@
                     }
                 });
             });
+        }
+
+        // PDF Functions
+        function openPdfPreview(pdfUrl, title) {
+            currentPdfUrl = pdfUrl;
+            const panel = document.getElementById('pdfPreviewPanel');
+            const iframe = document.getElementById('pdfPreviewIframe');
+            const titleElement = document.getElementById('pdfPreviewTitle');
+            const infoElement = document.getElementById('pdfPreviewInfo');
+            
+            titleElement.textContent = title || 'PDF Preview';
+            
+            // Use Google Docs viewer for PDF preview
+            const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+            iframe.src = viewerUrl;
+            
+            // Update info
+            infoElement.innerHTML = `
+                <strong>Title:</strong> ${title || 'N/A'}<br>
+                <strong>URL:</strong> <a href="${pdfUrl}" target="_blank" style="color: #3498db; word-break: break-all;">${pdfUrl}</a><br>
+                <strong>Type:</strong> PDF Document<br>
+                <strong>Actions:</strong> Use buttons below to view in different modes.
+            `;
+            
+            panel.classList.add('open');
+        }
+
+        function closePdfPreview() {
+            const panel = document.getElementById('pdfPreviewPanel');
+            panel.classList.remove('open');
+            document.getElementById('pdfPreviewIframe').src = '';
+        }
+
+        function openPdfFullscreen(pdfUrl, title) {
+            currentPdfUrl = pdfUrl;
+            const modal = document.getElementById('pdfModal');
+            const viewer = document.getElementById('pdfViewer');
+            const titleElement = document.getElementById('pdfModalTitle');
+            const loading = document.getElementById('pdfLoading');
+            const error = document.getElementById('pdfError');
+            
+            titleElement.textContent = title || 'PDF Viewer';
+            
+            // Show loading, hide error and viewer
+            loading.style.display = 'block';
+            viewer.style.display = 'none';
+            error.style.display = 'none';
+            
+            // Use Google Docs viewer for PDF
+            const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+            
+            viewer.onload = function() {
+                loading.style.display = 'none';
+                viewer.style.display = 'block';
+            };
+            
+            viewer.onerror = function() {
+                loading.style.display = 'none';
+                error.style.display = 'block';
+            };
+            
+            viewer.src = viewerUrl;
+            modal.style.display = 'block';
+        }
+
+        function closePdfModal() {
+            const modal = document.getElementById('pdfModal');
+            const viewer = document.getElementById('pdfViewer');
+            
+            modal.style.display = 'none';
+            viewer.src = '';
+            
+            // Exit fullscreen if active
+            if (isFullscreen) {
+                togglePdfFullscreen();
+            }
+        }
+
+        function togglePdfFullscreen() {
+            const modal = document.getElementById('pdfModal');
+            isFullscreen = !isFullscreen;
+            
+            if (isFullscreen) {
+                modal.classList.add('fullscreen-pdf');
+                document.body.style.overflow = 'hidden';
+            } else {
+                modal.classList.remove('fullscreen-pdf');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function openPdfInNewTab() {
+            if (currentPdfUrl) {
+                window.open(currentPdfUrl, '_blank');
+            }
         }
 
         // Admin Functions
@@ -743,10 +1215,43 @@
             }, 3000);
         }
 
-        // Allow Enter key to submit password
+        // Event Listeners
         document.getElementById('passwordInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 verifyPassword();
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('pdfModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePdfModal();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Escape key to close modals
+            if (e.key === 'Escape') {
+                closePdfModal();
+                closePdfPreview();
+            }
+            
+            // F11 for fullscreen
+            if (e.key === 'F11' && document.getElementById('pdfModal').style.display === 'block') {
+                e.preventDefault();
+                togglePdfFullscreen();
+            }
+        });
+
+        // Close preview panel when clicking outside
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('pdfPreviewPanel');
+            const isClickInsidePanel = panel.contains(e.target);
+            const isPdfButton = e.target.classList.contains('preview-btn');
+            
+            if (!isClickInsidePanel && !isPdfButton && panel.classList.contains('open')) {
+                closePdfPreview();
             }
         });
     </script>
